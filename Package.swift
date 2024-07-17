@@ -4,18 +4,25 @@
 import PackageDescription
 
 let package = Package(
-    name: "CLLVM",
-    products: [
-        // Products define the executables and libraries a package produces, making them visible to other packages.
-        .library(
-            name: "CLLVM",
-            targets: ["CLLVM"]),
-    ],
-    targets: [
-        // Targets are the basic building blocks of a package, defining a module or a test suite.
-        // Targets can depend on other targets in this package and products from dependencies.
-        .target(
-            name: "CLLVM"),
-
-    ]
+	name: "C_LLVM",
+	products: [
+		// Products define the executables and libraries a package produces, making them visible to other packages.
+		.library(
+			name: "C_LLVM",
+			targets: ["C_LLVM"]
+		),
+	],
+	targets: [
+		.systemLibrary(
+			name: "C_LLVM",
+			pkgConfig: "cllvm",
+			providers: [
+				.brew(["llvm"])
+			]
+		),
+		.testTarget(
+			name: "C_LLVMTests",
+			dependencies: ["C_LLVM"]
+		)
+	]
 )
