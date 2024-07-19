@@ -1,14 +1,14 @@
 //
-//  Test.swift
-//  CLLVM
+//  Cxx_LLVMTests.swift
+//  
 //
-//  Created by Pat Nakajima on 7/16/24.
+//  Created by Pat Nakajima on 7/18/24.
 //
 
 import Testing
-import C_LLVM
+import Cxx_LLVM
 
-struct CLLVMTests {
+struct CxxLLVMTests {
 	@Test func basic() async throws {
 		// Write your test here and use APIs like `#expect(...)` to check expected conditions.
 	}
