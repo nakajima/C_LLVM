@@ -8,16 +8,16 @@
 import C_LLVM
 
 public extension LLVM {
-    protocol StoredPointer: IRType {
-        associatedtype T: IRType
+	protocol StoredPointer: IRType, IRValue {
+		associatedtype T: IRType
 
-        var type: T { get }
-        var ref: LLVMValueRef { get }
-    }
+		var type: T { get }
+		var ref: LLVMValueRef { get }
+	}
 }
 
 public extension LLVM.StoredPointer {
-    var isPointer: Bool {
-        true
-    }
+	var isPointer: Bool {
+		true
+	}
 }

@@ -1,13 +1,14 @@
 //
-//  StackValue.swift
+//  HeapValue.swift
 //  LLVM
 //
-//  Created by Pat Nakajima on 7/25/24.
+//  Created by Pat Nakajima on 7/26/24.
 //
+
 import C_LLVM
 
 public extension LLVM {
-	struct StackValue<T: IRType>: IRValue, IRValueRef, StoredPointer {
+	struct HeapValue<T: IRType>: IRValue, IRValueRef, StoredPointer {
 		public typealias V = T.V
 
 		public let type: T

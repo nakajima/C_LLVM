@@ -8,8 +8,8 @@
 import C_LLVM
 
 public extension LLVM {
-    struct BoolValue: IRValue {
-        public typealias T = BoolType
-        public var type: LLVM.BoolType
-    }
+	struct BoolValue: IRValue {
+		public typealias T = BoolType
+		public var type: LLVM.BoolType
+	}
 }
