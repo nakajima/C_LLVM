@@ -1,6 +1,4 @@
-import Testing
 import LLVM
+import Testing
 
-struct LLVMTests {
-
-}
+struct LLVMTests {}

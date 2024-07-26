@@ -8,19 +8,19 @@
 import C_LLVM
 
 public extension LLVM {
-	struct EmittedType<T: IRType>: IRType, Emitted {
-		public typealias V = T.V
-		
-		public let type: T
-		public let typeRef: LLVMTypeRef
+    struct EmittedType<T: IRType>: IRType, Emitted {
+        public typealias V = T.V
 
-		init(type: T, typeRef: LLVMTypeRef) {
-			self.type = type
-			self.typeRef = typeRef
-		}
+        public let type: T
+        public let typeRef: LLVMTypeRef
 
-		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
-			typeRef
-		}
-	}
+        init(type: T, typeRef: LLVMTypeRef) {
+            self.type = type
+            self.typeRef = typeRef
+        }
+
+        public func typeRef(in _: LLVM.Context) -> LLVMTypeRef {
+            typeRef
+        }
+    }
 }

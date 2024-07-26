@@ -8,20 +8,19 @@
 import C_LLVM
 
 public extension LLVM {
-	struct IntValue: IRValue {
-		public let type: IntType
-	}
+    struct IntValue: IRValue {
+        public let type: IntType
+    }
 
-	struct EmittedIntValue: EmittedValue {
-		public let type: IntType
-		public let value: IntValue
-		public let ref: LLVMValueRef
+    struct EmittedIntValue: EmittedValue {
+        public typealias V = IntValue
 
-		public init(type: IntType, value: IntValue, ref: LLVMValueRef) {
-			self.type = type
-			self.value = value
-			self.ref = ref
-		}
-	}
+        public let type: IntType
+        public let ref: LLVMValueRef
+
+        public init(type: IntType, ref: LLVMValueRef) {
+            self.type = type
+            self.ref = ref
+        }
+    }
 }
-

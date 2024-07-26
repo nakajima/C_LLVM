@@ -6,15 +6,15 @@
 //
 
 public extension LLVM {
-	public protocol Emitted {}
+    protocol Emitted {}
 }
 
 public extension LLVM.Emitted {
-	func asValue<E: LLVM.EmittedValue>(of type: E.V.Type) -> E? {
-		if let emitted = self as? E {
-			return emitted
-		}
+    func asValue<E: LLVM.EmittedValue>(of _: E.Type) -> E? {
+        if let emitted = self as? E {
+            return emitted
+        }
 
-		return nil
-	}
+        return nil
+    }
 }

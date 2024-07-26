@@ -1,5 +1,5 @@
 //
-//  Pointer.swift
+//  StoredPointer.swift
 //  LLVM
 //
 //  Created by Pat Nakajima on 7/25/24.
@@ -8,18 +8,16 @@
 import C_LLVM
 
 public extension LLVM {
-	protocol StoredPointer: IRValue {
-		associatedtype V: IRValue
+    protocol StoredPointer: IRType {
+        associatedtype T: IRType
 
-		var type: V.T { get }
-		var value: V { get }
-		var ref: LLVMValueRef { get }
-	}
+        var type: T { get }
+        var ref: LLVMValueRef { get }
+    }
 }
 
 public extension LLVM.StoredPointer {
-	var isPointer: Bool {
-		true
-	}
+    var isPointer: Bool {
+        true
+    }
 }
-

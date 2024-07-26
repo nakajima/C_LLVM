@@ -7,14 +7,14 @@
 import C_LLVM
 
 public extension LLVM {
-	protocol IRType<V>: IR {
-		associatedtype V: IRValue
-		func typeRef(in context: Context) -> LLVMTypeRef
-	}
+    protocol IRType<V>: IR {
+        associatedtype V: IRValue
+        func typeRef(in context: Context) -> LLVMTypeRef
+    }
 }
 
 extension LLVMOpcode: LLVM.IR {
-	public func asLLVM<T>() -> T {
-		self as! T
-	}
+    public func asLLVM<T>() -> T {
+        self as! T
+    }
 }

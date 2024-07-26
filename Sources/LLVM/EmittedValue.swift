@@ -8,13 +8,12 @@
 import C_LLVM
 
 public extension LLVM {
-	protocol EmittedValue: IRValue, IRValueRef, Emitted {
-		associatedtype V: IRValue
+    protocol EmittedValue: IRValue, IRValueRef, Emitted {
+        associatedtype T: IRType
 
-		var type: V.T { get }
-		var value: V { get }
-		var ref: LLVMValueRef { get }
+        var type: T { get }
+        var ref: LLVMValueRef { get }
 
-		init(type: V.T, value: V, ref: LLVMValueRef)
-	}
+        init(type: T, ref: LLVMValueRef)
+    }
 }

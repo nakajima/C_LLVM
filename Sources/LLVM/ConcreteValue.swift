@@ -6,5 +6,5 @@
 //
 
 public extension LLVM {
-	protocol ConcreteValue {}
+    protocol ConcreteValue {}
 }

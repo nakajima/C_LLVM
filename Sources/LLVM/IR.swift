@@ -6,9 +6,9 @@
 //
 
 public extension LLVM {
-	protocol IR {}
+    protocol IR {}
 }
 
 public extension LLVM.IR {
-	var isPointer: Bool { false }
+    var isPointer: Bool { false }
 }

@@ -7,11 +7,14 @@
 import C_LLVM
 
 public extension LLVM {
-	struct StackValue<V: IRValue>: IRValue, IRValueRef, StoredPointer {
-		public typealias T = V.T
+    struct StackValue<T: IRType>: IRValue, IRValueRef, StoredPointer {
+        public typealias V = T.V
 
-		public let type: V.T
-		public let value: V
-		public let ref: LLVMValueRef
-	}
+        public let type: T
+        public let ref: LLVMValueRef
+
+        public func typeRef(in _: LLVM.Context) -> LLVMTypeRef {
+            ref
+        }
+    }
 }
