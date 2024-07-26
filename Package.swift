@@ -4,13 +4,21 @@
 import PackageDescription
 
 let package = Package(
-	name: "C_LLVM",
+	name: "LLVM",
+	platforms: [.macOS(.v10_15)],
 	products: [
 		// Products define the executables and libraries a package produces, making them visible to other packages.
 		.library(
 			name: "C_LLVM",
 			targets: ["C_LLVM"]
 		),
+		.library(
+			name: "LLVM",
+			targets: ["LLVM"]
+		)
+	],
+	dependencies: [
+		.package(url: "https://github.com/apple/swift-testing", branch: "main")
 	],
 	targets: [
 		.systemLibrary(
@@ -20,10 +28,13 @@ let package = Package(
 				.brew(["llvm"])
 			]
 		),
+		.target(
+			name: "LLVM",
+			dependencies: ["C_LLVM"]
+		),
 		.testTarget(
 			name: "C_LLVMTests",
 			dependencies: ["C_LLVM"]
-		),
-	],
-	cxxLanguageStandard: .cxx20
+		)
+	]
 )
