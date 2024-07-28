@@ -26,6 +26,10 @@ public extension LLVM.Function {
 			self.parent = parent
 		}
 
+		public func has(_ name: String) -> Bool {
+			bindings[name] != nil
+		}
+
 		public func get(_ name: String) -> Binding? {
 			// If it's in the current environment, we're good to go
 			if let binding = bindings[name] {

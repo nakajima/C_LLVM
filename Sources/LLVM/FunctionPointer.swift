@@ -15,9 +15,9 @@ public extension LLVM {
 
 		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
 			if let captures = functionType.captures {
-				StructType(name: "fnPtrWithEnv", types: [functionType, captures]).typeRef(in: context)
+				StructType(name: "\(functionType.name)fnPtrWithEnv", types: [functionType, captures]).typeRef(in: context)
 			} else {
-				StructType(name: "fnPtr", types: [functionType]).typeRef(in: context)
+				StructType(name: "\(functionType.name)fnPtr", types: [functionType]).typeRef(in: context)
 			}
 		}
 	}

@@ -295,11 +295,14 @@ public extension LLVM {
 			// Get the env pointer
 			let envParam = LLVMGetParam(currentFunction, parameterCount - 1)!
 
+			// Load the env
+			let env = LLVMBuildLoad2(builder, LLVMPointerType(envStructType.typeRef(in: context), 0), envParam, "envTmp")
+
 			// Get the pointer to the captured value out of the env
 			let ptr = LLVMBuildStructGEP2(
 				builder,
 				envStructType.typeRef(in: context),
-				envParam,
+				env,
 				UInt32(index),
 				"capture_\(index)Ptr_"
 			)
@@ -356,7 +359,8 @@ public extension LLVM {
 			)
 
 			let returnType = envStructType.types[index]
-			let returning = LLVMBuildLoad2(builder, returnType.typeRef(in: context), ptr, "capture_\(index)_")!
+			let returningPtr = LLVMBuildLoad2(builder, LLVMPointerType(returnType.typeRef(in: context), 0), ptr, "capture_\(index)ReturningPtr_")!
+			let returning = LLVMBuildLoad2(builder, returnType.typeRef(in: context), returningPtr, "capture_\(index)_")!
 			return switch returnType {
 			case let type as LLVM.IntType:
 				EmittedIntValue(type: type, ref: returning)

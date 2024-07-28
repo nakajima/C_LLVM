@@ -15,6 +15,8 @@ public extension LLVM {
 		var ref: LLVMValueRef { get }
 
 		var isHeap: Bool { get }
+
+		init(type: T, ref: LLVMValueRef)
 	}
 }
 

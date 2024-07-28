@@ -32,32 +32,6 @@ public extension LLVM {
 		}
 	}
 
-//	struct StructValue: LLVM.IRValue, LLVM.StoredPointer {
-//		public typealias T = StructType
-//		public var type: LLVM.StructType
-//		public var ref: LLVMValueRef
-//		public let isHeap = true
-//
-//		static func create(name: String, from values: [any StoredPointer], with builder: Builder) -> StructValue {
-//			let structType = StructType(name: name, types: values.map(\.type))
-//			let structTypeRef = structType.typeRef(in: builder.context)
-//			let pointer = builder.malloca(type: structType, name: name)
-//
-//			for (i, value) in values.enumerated() {
-//				print("-> setting gep for \(Swift.type(of: value))")
-//				let field = LLVMBuildStructGEP2(builder.builder, structTypeRef, pointer.ref, UInt32(i), "")
-//				LLVMBuildStore(builder.builder, value.ref, field)
-//			}
-//
-//			return StructValue(type: structType, ref: pointer.ref)
-//		}
-//
-//		public init(type: LLVM.StructType, ref: LLVMValueRef) {
-//			self.type = type
-//			self.ref = ref
-//		}
-//	}
-
 	struct CapturesStruct: LLVM.IRValue, LLVM.StoredPointer {
 		public typealias T = StructType
 		public var type: LLVM.StructType

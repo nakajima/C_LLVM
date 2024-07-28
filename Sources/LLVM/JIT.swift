@@ -15,8 +15,6 @@ public extension LLVM {
 			LLVMInitializeNativeAsmParser()
 			LLVMInitializeNativeAsmPrinter()
 
-			module.dump()
-
 			var message: UnsafeMutablePointer<Int8>?
 			LLVMVerifyModule(module.ref, LLVMPrintMessageAction, &message)
 
@@ -35,9 +33,11 @@ public extension LLVM {
 			// Get the function to execute
 			let function = LLVMGetNamedFunction(module.ref, "main")
 
-			if optimize {
+			if optimize || true {
 				LLVM.ModulePassManager(module: module).run()
 			}
+
+			module.dump()
 
 			// Execute the function
 			let result = LLVMRunFunction(engine, function, 0, nil)
