@@ -33,7 +33,7 @@ public extension LLVM {
 			// Get the function to execute
 			let function = LLVMGetNamedFunction(module.ref, "main")
 
-			if optimize || true {
+			if optimize {
 				LLVM.ModulePassManager(module: module).run()
 			}
 
