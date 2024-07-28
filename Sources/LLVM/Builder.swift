@@ -14,7 +14,7 @@ public extension LLVM {
 		var context: Context { module.context }
 
 		public init(module: Module) {
-			builder = LLVMCreateBuilderInContext(module.context.ref)
+			self.builder = LLVMCreateBuilderInContext(module.context.ref)
 			self.module = module
 		}
 
@@ -96,9 +96,7 @@ public extension LLVM {
 
 			let functionPointerType = FunctionPointerType(functionType: fn.type)
 
-			if fn.type.name.contains("fn_y") {
-
-			}
+			if fn.type.name.contains("fn_y") {}
 
 			let functionRefPointer = LLVMBuildStructGEP2(
 				builder,
@@ -385,7 +383,7 @@ public extension LLVM {
 			}
 		}
 
-		public func emit<V: IRValue, Value>(constant: Constant<V, Value>) -> any EmittedValue {
+		public func emit(constant: Constant<some IRValue, some Any>) -> any EmittedValue {
 			let ref = constant.valueRef(in: context)
 
 			switch constant.type {
@@ -414,7 +412,7 @@ public extension LLVM {
 			return RawValue(ref: ref)
 		}
 
-		public func emit<V: IRValue>(return stackValue: StackValue<V>) -> any IRValue {
+		public func emit(return stackValue: StackValue<some IRValue>) -> any IRValue {
 			let ref = LLVMBuildRet(
 				builder,
 				stackValue.ref

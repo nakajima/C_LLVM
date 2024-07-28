@@ -19,7 +19,7 @@ public extension LLVM {
 }
 
 public extension LLVM.EmittedValue {
-	func `as`<T: LLVM.EmittedValue>(_ type: T.Type) -> T {
+	func `as`<T: LLVM.EmittedValue>(_: T.Type) -> T {
 		self as! T
 	}
 }

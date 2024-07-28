@@ -8,7 +8,7 @@
 import C_LLVM
 
 public extension LLVM {
-	public struct FunctionPointerType: IRType {
+	struct FunctionPointerType: IRType {
 		public typealias V = FunctionPointer
 
 		let functionType: FunctionType
@@ -22,7 +22,7 @@ public extension LLVM {
 		}
 	}
 
-	public struct FunctionEnvironmentPointerType: IRType {
+	struct FunctionEnvironmentPointerType: IRType {
 		public typealias V = CapturesStruct
 
 		public let envStructType: StructType
@@ -32,12 +32,12 @@ public extension LLVM {
 		}
 	}
 
-	public struct FunctionPointer: LLVM.StoredPointer {
+	struct FunctionPointer: LLVM.StoredPointer {
 		public var type: LLVM.FunctionPointerType
-		
+
 		public typealias T = FunctionPointerType
 		public var ref: LLVMValueRef
-		
+
 		public var isHeap: Bool
 
 //		var functionRef: LLVMValueRef

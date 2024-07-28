@@ -8,11 +8,11 @@
 import C_LLVM
 
 public extension LLVM {
-    struct BoolType: IRType {
-        public typealias V = BoolValue
+	struct BoolType: IRType {
+		public typealias V = BoolValue
 
-        public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
-            IntType(width: 1).typeRef(in: context)
-        }
-    }
+		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
+			IntType(width: 1).typeRef(in: context)
+		}
+	}
 }

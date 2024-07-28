@@ -7,28 +7,28 @@
 import C_LLVM
 
 public extension LLVM {
-    class Context {
-        let ref: LLVMContextRef
-        let isOwned: Bool
+	class Context {
+		let ref: LLVMContextRef
+		let isOwned: Bool
 
-        public static var global: Context {
-            Context(ref: LLVMGetGlobalContext())
-        }
+		public static var global: Context {
+			Context(ref: LLVMGetGlobalContext())
+		}
 
-        private init(ref: LLVMContextRef) {
-            self.ref = ref
-            isOwned = false
-        }
+		private init(ref: LLVMContextRef) {
+			self.ref = ref
+			self.isOwned = false
+		}
 
-        public init() {
-            ref = LLVMContextCreate()
-            isOwned = true
-        }
+		public init() {
+			self.ref = LLVMContextCreate()
+			self.isOwned = true
+		}
 
-        deinit {
-            if isOwned {
-                LLVMContextDispose(ref)
-            }
-        }
-    }
+		deinit {
+			if isOwned {
+				LLVMContextDispose(ref)
+			}
+		}
+	}
 }

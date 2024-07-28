@@ -8,7 +8,7 @@
 import C_LLVM
 
 public extension LLVM {
-    protocol IRValueRef {
-        var ref: LLVMValueRef { get }
-    }
+	protocol IRValueRef {
+		var ref: LLVMValueRef { get }
+	}
 }

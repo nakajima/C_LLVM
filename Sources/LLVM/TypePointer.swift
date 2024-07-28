@@ -8,17 +8,17 @@
 import C_LLVM
 
 public extension LLVM {
-    struct TypePointer<T: IRType>: IRType {
-        public typealias V = T.V
+	struct TypePointer<T: IRType>: IRType {
+		public typealias V = T.V
 
-        var type: T
+		var type: T
 
-        public init(type: T) {
-            self.type = type
-        }
+		public init(type: T) {
+			self.type = type
+		}
 
-        public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
-            LLVMPointerType(type.typeRef(in: context), 0)
-        }
-    }
+		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
+			LLVMPointerType(type.typeRef(in: context), 0)
+		}
+	}
 }

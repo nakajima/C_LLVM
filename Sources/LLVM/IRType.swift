@@ -15,7 +15,7 @@ public extension LLVM {
 }
 
 public extension LLVM.IRType {
-	func `as`<T: LLVM.IRType>(_ type: T.Type) -> T {
+	func `as`<T: LLVM.IRType>(_: T.Type) -> T {
 		self as! T
 	}
 

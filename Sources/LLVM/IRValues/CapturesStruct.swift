@@ -82,7 +82,7 @@ public extension LLVM {
 			true
 		}
 
-		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
+		public func typeRef(in _: LLVM.Context) -> LLVMTypeRef {
 			ref
 		}
 	}

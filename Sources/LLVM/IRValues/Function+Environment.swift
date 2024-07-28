@@ -9,10 +9,10 @@ public extension LLVM.Function {
 	class Environment {
 		public enum Binding {
 			case declared(any LLVM.StoredPointer),
-					 defined(any LLVM.StoredPointer),
-					 parameter(Int, any LLVM.IRType),
-					 capture(Int, LLVM.StructType),
-					 function(String)
+			     defined(any LLVM.StoredPointer),
+			     parameter(Int, any LLVM.IRType),
+			     capture(Int, LLVM.StructType),
+			     function(String)
 		}
 
 		var parent: Environment?
