@@ -8,11 +8,13 @@
 import C_LLVM
 
 public extension LLVM {
-	protocol StoredPointer: IRType, EmittedValue {
+	protocol StoredPointer: EmittedValue {
 		associatedtype T: IRType
 
 		var type: T { get }
 		var ref: LLVMValueRef { get }
+
+		var isHeap: Bool { get }
 	}
 }
 

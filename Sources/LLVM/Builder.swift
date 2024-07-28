@@ -51,9 +51,14 @@ public extension LLVM {
 			return EmittedType(type: functionType, typeRef: builder)
 		}
 
-		public func define(_ function: Function, parameterNames: [String], body: () -> Void) -> EmittedFunctionValue {
-			let typeRef = function.type.typeRef(in: context)
-			let functionRef = functionRef(for: function.type)
+		public func define(_ functionType: FunctionType, parameterNames: [String], envStruct: CapturesStruct?, body: () -> Void) -> EmittedFunctionValue {
+			let typeRef = if let envStruct {
+				functionType.typeRef(in: context, captures: envStruct)
+			} else {
+				functionType.typeRef(in: context)
+			}
+
+			let functionRef = functionRef(for: functionType)
 
 			// Get the current position we're at so we can go back there after the function is defined
 			let originalBlock = LLVMGetInsertBlock(builder)
@@ -79,11 +84,15 @@ public extension LLVM {
 				LLVMPositionBuilderAtEnd(builder, returnToBlock)
 			}
 
-			return EmittedFunctionValue(type: function.type, ref: functionRef)
+			return EmittedFunctionValue(type: functionType, ref: functionRef, captures: envStruct)
 		}
 
 		public func call(_ fn: EmittedFunctionValue, with arguments: [any EmittedValue]) -> any EmittedValue {
 			var args: [LLVMValueRef?] = arguments.map(\.ref)
+
+			if let captures = fn.captures, !captures.captures.isEmpty {
+				args.append(captures.ref)
+			}
 
 			let ref = args.withUnsafeMutableBufferPointer {
 				LLVMBuildCall2(
@@ -106,7 +115,7 @@ public extension LLVM {
 			}
 		}
 
-		public func call(_ fnPtr: any StoredPointer, with arguments: [any EmittedValue]) -> any EmittedValue {
+		public func call(_ fnPtr: any LLVM.FunctionPointer, with arguments: [any EmittedValue]) -> any EmittedValue {
 			guard let function = fnPtr.type as? FunctionType else {
 				fatalError()
 			}
@@ -146,6 +155,19 @@ public extension LLVM {
 			}
 		}
 
+		public func `struct`(type: CapturesStructType, values: [(String, any StoredPointer)]) -> any EmittedValue {
+			let typeRef = type.typeRef(in: context)
+			let pointer = malloca(type: type, name: "")
+
+			for (i, value) in values.enumerated() {
+				print("-> setting gep for \(value.0)")
+				let field = LLVMBuildStructGEP2(builder, typeRef, pointer.ref, UInt32(i), "")
+				LLVMBuildStore(builder, value.1.ref, field)
+			}
+
+			return pointer
+		}
+
 		public func malloca(type: any LLVM.IRType, name: String) -> any StoredPointer {
 			let malloca = if let functionType = type as? FunctionType {
 				{
@@ -172,6 +194,8 @@ public extension LLVM {
 				return HeapValue<LLVM.FunctionType>(type: type, ref: malloca)
 			case let type as LLVM.IntType:
 				return HeapValue<LLVM.IntType>(type: type, ref: malloca)
+			case let type as LLVM.CapturesStructType:
+				return HeapValue<LLVM.CapturesStructType>(type: type, ref: malloca)
 			default:
 				fatalError()
 			}

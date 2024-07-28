@@ -13,7 +13,7 @@ public extension LLVM {
 
 		public let type: FunctionType
 
-		public init(type: FunctionType) {
+		public init(type: FunctionType, captures: CapturesStruct?) {
 			self.type = type
 		}
 
@@ -27,10 +27,18 @@ public extension LLVM {
 
 		public let type: FunctionType
 		public let ref: LLVMValueRef
+		public let captures: CapturesStruct?
 
 		public init(type: FunctionType, ref: LLVMValueRef) {
 			self.type = type
 			self.ref = ref
+			self.captures = nil
+		}
+
+		public init(type: FunctionType, ref: LLVMValueRef, captures: CapturesStruct?) {
+			self.type = type
+			self.ref = ref
+			self.captures = captures
 		}
 	}
 }

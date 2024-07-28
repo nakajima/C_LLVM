@@ -18,6 +18,10 @@ public extension LLVM {
 			self.ref = ref
 		}
 
+		public var isHeap: Bool {
+			true
+		}
+
 		public func typeRef(in _: LLVM.Context) -> LLVMTypeRef {
 			ref
 		}

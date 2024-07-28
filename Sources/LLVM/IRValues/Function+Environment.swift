@@ -8,7 +8,7 @@
 public extension LLVM.Function {
 	class Environment {
 		public enum Binding {
-			case declared(any LLVM.StoredPointer), defined(any LLVM.StoredPointer), parameter(Int), function(String)
+			case declared(any LLVM.StoredPointer), defined(any LLVM.StoredPointer), parameter(Int, any LLVM.IRType), function(String)
 		}
 
 		var parent: Environment?
@@ -40,8 +40,8 @@ public extension LLVM.Function {
 			return pointer.type
 		}
 
-		public func parameter(_ name: String, at index: Int) {
-			bindings[name] = .parameter(index)
+		public func parameter(_ name: String, type: any LLVM.IRType, at index: Int) {
+			bindings[name] = .parameter(index, type)
 		}
 
 		public func define(_ name: String, as value: any LLVM.StoredPointer) {
@@ -54,6 +54,46 @@ public extension LLVM.Function {
 
 		public func declareFunction(_ name: String) {
 			bindings[name] = .function(name)
+		}
+
+		public func capture(_ name: String, with builder: LLVM.Builder) -> any LLVM.StoredPointer {
+			switch get(name) {
+			case let .declared(pointer):
+				// If it's already on the heap, we can just keep using it
+				if pointer.isHeap { return pointer }
+
+				// If it's not, change the declaration to the heap
+				let heapPointer = builder.malloca(type: pointer.type, name: name)
+				declare(name, as: heapPointer)
+
+				return heapPointer
+			case let .defined(pointer):
+				// If it's already on the heap, we can just keep using it
+				if pointer.isHeap { return pointer }
+
+				// If it's not, we need to move it to the heap and update our own use
+				let heapPointer = builder.malloca(type: pointer.type, name: name)
+				let currentValue = builder.load(pointer: pointer)
+
+				builder.store(currentValue, to: heapPointer)
+				define(name, as: heapPointer)
+
+				return heapPointer
+			case let .parameter(index, type):
+				let heapPointer = builder.malloca(type: type, name: name)
+				let currentValue = builder.load(parameter: index)
+
+				builder.store(currentValue, to: heapPointer)
+				define(name, as: heapPointer)
+
+				return heapPointer
+			default:
+				if let parentCapture = parent?.capture(name, with: builder) {
+					return parentCapture
+				}
+			}
+
+			fatalError("Cannot capture \(name), doesn't exist in any parent environments.")
 		}
 	}
 }
