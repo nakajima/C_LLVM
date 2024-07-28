@@ -8,31 +8,29 @@
 import C_LLVM
 
 public extension LLVM {
-    struct Function: IRValue {
-        public typealias T = FunctionType
+	struct Function: IRValue {
+		public typealias T = FunctionType
 
-        public let type: FunctionType
-        public let environment: Environment
+		public let type: FunctionType
 
-        public init(type: FunctionType, environment: Environment) {
-            self.type = type
-            self.environment = environment
-        }
+		public init(type: FunctionType) {
+			self.type = type
+		}
 
-        public func valueRef(in _: LLVM.Context) -> LLVMValueRef {
-            fatalError("Cannot generate value ref for function, you need an EmittedValue<Function> instead.")
-        }
-    }
+		public func valueRef(in _: LLVM.Context) -> LLVMValueRef {
+			fatalError("Cannot generate value ref for function, you need an EmittedValue<Function> instead.")
+		}
+	}
 
-    struct EmittedFunctionValue: EmittedValue {
-        public typealias V = Function
+	struct EmittedFunctionValue: EmittedValue {
+		public typealias V = Function
 
-        public let type: FunctionType
-        public let ref: LLVMValueRef
+		public let type: FunctionType
+		public let ref: LLVMValueRef
 
-        public init(type: FunctionType, ref: LLVMValueRef) {
-            self.type = type
-            self.ref = ref
-        }
-    }
+		public init(type: FunctionType, ref: LLVMValueRef) {
+			self.type = type
+			self.ref = ref
+		}
+	}
 }

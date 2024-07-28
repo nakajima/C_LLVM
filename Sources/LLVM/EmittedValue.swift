@@ -8,12 +8,18 @@
 import C_LLVM
 
 public extension LLVM {
-    protocol EmittedValue: IRValue, IRValueRef, Emitted {
-        associatedtype T: IRType
+	protocol EmittedValue: IRValue, IRValueRef, Emitted {
+		associatedtype T: IRType
 
-        var type: T { get }
-        var ref: LLVMValueRef { get }
+		var type: T { get }
+		var ref: LLVMValueRef { get }
 
-        init(type: T, ref: LLVMValueRef)
-    }
+		init(type: T, ref: LLVMValueRef)
+	}
+}
+
+public extension LLVM.EmittedValue {
+	func `as`<T: LLVM.EmittedValue>(_ type: T.Type) -> T {
+		self as! T
+	}
 }
