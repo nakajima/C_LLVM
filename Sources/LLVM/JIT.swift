@@ -15,6 +15,8 @@ public extension LLVM {
 			LLVMInitializeNativeAsmParser()
 			LLVMInitializeNativeAsmPrinter()
 
+			module.dump()
+
 			var message: UnsafeMutablePointer<Int8>?
 			LLVMVerifyModule(module.ref, LLVMPrintMessageAction, &message)
 

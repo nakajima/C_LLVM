@@ -8,11 +8,19 @@
 public extension LLVM.Function {
 	class Environment {
 		public enum Binding {
-			case declared(any LLVM.StoredPointer), defined(any LLVM.StoredPointer), parameter(Int, any LLVM.IRType), function(String)
+			case declared(any LLVM.StoredPointer),
+					 defined(any LLVM.StoredPointer),
+					 parameter(Int, any LLVM.IRType),
+					 capture(Int, LLVM.StructType),
+					 function(String)
 		}
 
 		var parent: Environment?
-		var bindings: [String: Binding] = [:]
+
+		public var envStructType: LLVM.StructType?
+
+		// TODO: this ought not be public
+		public var bindings: [String: Binding] = [:]
 
 		public init(parent: Environment? = nil) {
 			self.parent = parent
