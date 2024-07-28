@@ -8,7 +8,7 @@
 public extension LLVM.Function {
 	class Environment {
 		public enum Binding {
-			case defined(any LLVM.StoredPointer), parameter(Int), capture(Environment)
+			case declared(any LLVM.StoredPointer), defined(any LLVM.StoredPointer), parameter(Int), function(String)
 		}
 
 		var parent: Environment?
@@ -25,7 +25,7 @@ public extension LLVM.Function {
 			}
 
 			// If it's not, then we can't return params anymore
-			if let binding = parent?.bindings[name], case .defined = binding {
+			if let binding = parent?.bindings[name] {
 				return binding
 			}
 
@@ -46,6 +46,14 @@ public extension LLVM.Function {
 
 		public func define(_ name: String, as value: any LLVM.StoredPointer) {
 			bindings[name] = .defined(value)
+		}
+
+		public func declare(_ name: String, as value: any LLVM.StoredPointer) {
+			bindings[name] = .declared(value)
+		}
+
+		public func declareFunction(_ name: String) {
+			bindings[name] = .function(name)
 		}
 	}
 }

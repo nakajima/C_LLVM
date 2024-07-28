@@ -11,7 +11,7 @@ public extension LLVM {
 	struct FunctionType: IRType {
 		public typealias V = Function
 
-		public let name: String
+		public var name: String
 		public let returnType: any IRType
 		public let parameterTypes: [any IRType]
 		public let isVarArg: Bool

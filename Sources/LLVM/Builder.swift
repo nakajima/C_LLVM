@@ -36,6 +36,14 @@ public extension LLVM {
 			}
 		}
 
+		public func main(functionType: FunctionType) -> any EmittedValue {
+			let typeRef = functionType.typeRef(in: context)
+			let functionRef = LLVMAddFunction(module.ref, functionType.name, typeRef)!
+			let entry = LLVMAppendBasicBlock(functionRef, "entry")
+			LLVMPositionBuilderAtEnd(builder, entry)
+			return LLVM.EmittedFunctionValue(type: functionType, ref: functionRef)
+		}
+
 		// Emits a @declare for a function type
 		public func add(functionType: FunctionType) -> EmittedType<FunctionType> {
 			let typeRef = functionType.typeRef(in: context)
@@ -45,22 +53,19 @@ public extension LLVM {
 
 		public func define(_ function: Function, parameterNames: [String], body: () -> Void) -> EmittedFunctionValue {
 			let typeRef = function.type.typeRef(in: context)
-			let functionRef = LLVMAddFunction(module.ref, function.type.name, typeRef)!
+			let functionRef = functionRef(for: function.type)
+
+			// Get the current position we're at so we can go back there after the function is defined
+			let originalBlock = LLVMGetInsertBlock(builder)
+			let originalFunction = LLVMGetBasicBlockParent(originalBlock)
+
+			// Create the entry block for the function
+			let entryBlock = LLVMAppendBasicBlockInContext(context.ref, functionRef, "entry")
 
 			for (i, name) in parameterNames.enumerated() {
 				let paramRef = LLVMGetParam(functionRef, UInt32(i))
 				LLVMSetValueName2(paramRef, name, name.count)
 			}
-
-			// Get the current position we're at so we can go back there after the function is defined
-			let originalFunction: LLVMValueRef? = if let originalBlock = LLVMGetInsertBlock(builder) {
-				LLVMGetBasicBlockParent(originalBlock)
-			} else {
-				nil // This means we're in main
-			}
-
-			// Create the entry block for the function
-			let entryBlock = LLVMAppendBasicBlockInContext(context.ref, functionRef, "entry")
 
 			// Move the builder to our new entry block
 			LLVMPositionBuilderAtEnd(builder, entryBlock)
@@ -139,6 +144,97 @@ public extension LLVM {
 			default:
 				fatalError()
 			}
+		}
+
+		public func malloca(type: any LLVM.IRType, name: String) -> any StoredPointer {
+			let malloca = if let functionType = type as? FunctionType {
+				{
+					// Get the function
+					let fn = LLVMGetNamedFunction(module.ref, functionType.name)!
+
+					// Get a pointer type to the function
+					let functionPointerType = LLVMPointerType(LLVMTypeOf(fn), 0)
+
+					// Allocate the space for the function pointer
+					let malloca = inEntry {
+						LLVMBuildMalloc(builder, functionPointerType, name)!
+					}
+
+					return malloca
+				}()
+			} else {
+				inEntry { LLVMBuildMalloc(builder, type.typeRef(in: context), name)! }
+			}
+
+			// Return the stack value
+			switch type {
+			case let type as LLVM.FunctionType:
+				return HeapValue<LLVM.FunctionType>(type: type, ref: malloca)
+			case let type as LLVM.IntType:
+				return HeapValue<LLVM.IntType>(type: type, ref: malloca)
+			default:
+				fatalError()
+			}
+		}
+
+		public func alloca(type: any LLVM.IRType, name: String) -> any StoredPointer {
+			let alloca = if let functionType = type as? FunctionType {
+				{
+					let fn = functionRef(for: functionType)
+
+					// Get a pointer type to the function
+					let functionPointerType = LLVMPointerType(LLVMTypeOf(fn), 0)
+
+					// Allocate the space for the function pointer
+					let alloca = inEntry {
+						LLVMBuildAlloca(builder, functionPointerType, name)!
+					}
+
+					return alloca
+				}()
+			} else {
+				inEntry { LLVMBuildAlloca(builder, type.typeRef(in: context), name)! }
+			}
+
+			// Return the stack value
+			switch type {
+			case let type as LLVM.FunctionType:
+				return StackValue<LLVM.FunctionType>(type: type, ref: alloca)
+			case let type as LLVM.IntType:
+				return StackValue<LLVM.IntType>(type: type, ref: alloca)
+			default:
+				fatalError()
+			}
+		}
+
+		public func store<Emitted: EmittedValue>(heapValue: Emitted, name: String = "") -> HeapValue<Emitted.T> {
+			if let function = heapValue.type as? FunctionType {
+				// Get the function
+				let fn = LLVMGetNamedFunction(module.ref, function.name)!
+
+				// Get a pointer type to the function
+				let functionPointerType = LLVMPointerType(LLVMTypeOf(fn), 0)
+
+				// Allocate the space for the function pointer
+				let malloca = inEntry {
+					LLVMBuildMalloc(builder, functionPointerType, name)!
+				}
+
+				// Actually store the function pointer into the spot
+				let store = LLVMBuildStore(builder, fn, malloca)!
+
+				// Return the stack value
+				return HeapValue<Emitted.T>(type: heapValue.type, ref: malloca)
+			} else {
+				let malloca = inEntry { LLVMBuildAlloca(builder, heapValue.type.typeRef(in: context), name)! }
+				let store = LLVMBuildStore(builder, heapValue.ref, malloca)!
+				return HeapValue<Emitted.T>(type: heapValue.type, ref: malloca)
+			}
+		}
+
+		public func store(_ value: any EmittedValue, to pointer: any StoredPointer) -> any StoredPointer {
+			LLVMBuildStore(builder, value.ref, pointer.ref)
+			return pointer
 		}
 
 		// TODO: Move these to top of basic block
@@ -237,6 +333,15 @@ public extension LLVM {
 
 		public func dump() {
 			module.dump()
+		}
+
+		private func functionRef(for functionType: FunctionType) -> LLVMValueRef {
+			// Get the function
+			if let fn = LLVMGetNamedFunction(module.ref, functionType.name) {
+				return fn
+			} else {
+				return LLVMAddFunction(module.ref, functionType.name, functionType.typeRef(in: context))
+			}
 		}
 
 		private var currentFunction: LLVMValueRef {
