@@ -68,8 +68,6 @@ public extension LLVM.Builder {
 			blocks.append(elseBlock)
 
 			LLVMBuildBr(builder, mergeBlock)
-
-			return alternativeResult
 		}
 
 		LLVMPositionBuilderAtEnd(builder, mergeBlock)
