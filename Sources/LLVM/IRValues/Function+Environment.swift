@@ -87,7 +87,7 @@ public extension LLVM.Function {
 				let heapPointer = builder.malloca(type: pointer.type, name: name)
 				let currentValue = builder.load(pointer: pointer)
 
-				builder.store(currentValue, to: heapPointer)
+				_ = builder.store(currentValue, to: heapPointer)
 				define(name, as: heapPointer)
 
 				return heapPointer
@@ -95,7 +95,7 @@ public extension LLVM.Function {
 				let heapPointer = builder.malloca(type: type, name: name)
 				let currentValue = builder.load(parameter: index)
 
-				builder.store(currentValue, to: heapPointer)
+				_ = builder.store(currentValue, to: heapPointer)
 				define(name, as: heapPointer)
 
 				return heapPointer

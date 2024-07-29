@@ -11,12 +11,17 @@ public extension LLVM {
 		associatedtype V: IRValue
 		func typeRef(in context: Context) -> LLVMTypeRef
 		func asReturnType(in context: Context) -> LLVMTypeRef
+		var isVoid: Bool { get }
 	}
 }
 
 public extension LLVM.IRType {
 	func `as`<T: LLVM.IRType>(_: T.Type) -> T {
 		self as! T
+	}
+
+	var isVoid: Bool {
+		false
 	}
 
 	func asReturnType(in context: LLVM.Context) -> LLVMTypeRef {

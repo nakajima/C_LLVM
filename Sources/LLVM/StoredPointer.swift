@@ -8,9 +8,7 @@
 import C_LLVM
 
 public extension LLVM {
-	protocol StoredPointer: EmittedValue {
-		associatedtype T: IRType
-
+	protocol StoredPointer: EmittedValue where T: IRType {
 		var type: T { get }
 		var ref: LLVMValueRef { get }
 

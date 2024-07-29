@@ -48,13 +48,10 @@ public extension LLVM {
 
 		// Emits a @declare for a function type
 		public func add(functionType: FunctionType) -> EmittedType<FunctionType> {
-			let typeRef = functionType.typeRef(in: context)
-//			_ = LLVMAddFunction(module.ref, functionType.name, typeRef)
 			return EmittedType(type: functionType, typeRef: builder)
 		}
 
 		public func define(_ functionType: FunctionType, parameterNames: [String], envStruct: CapturesStruct?, body: () -> Void) -> EmittedFunctionValue {
-			let typeRef = functionType.typeRef(in: context)
 			let functionRef = functionRef(for: functionType)
 
 			let functionPointerRef = createFunctionPointer(
@@ -138,46 +135,6 @@ public extension LLVM {
 				EmittedIntValue(type: .i32, ref: ref)
 			case let type as FunctionType:
 				EmittedFunctionValue(type: type, ref: ref)
-			default:
-				fatalError()
-			}
-		}
-
-		public func call(_ fnPtr: LLVM.FunctionPointer, with arguments: [any EmittedValue]) -> any EmittedValue {
-			guard let function = fnPtr.type as? FunctionType else {
-				fatalError()
-			}
-
-			let loadedPtr = LLVMBuildLoad2(
-				builder,
-				LLVMTypeOf(fnPtr.ref),
-				fnPtr.ref,
-				function.name + "_call"
-			)
-
-			var args: [LLVMValueRef?] = arguments.map(\.ref)
-
-			let ref = args.withUnsafeMutableBufferPointer {
-				LLVMBuildCall2(
-					builder,
-					function.typeRef(in: context),
-					loadedPtr,
-					$0.baseAddress,
-					UInt32($0.count),
-					function.name
-				)!
-			}
-
-			return switch function.returnType {
-			case is IntType:
-				EmittedIntValue(type: .i32, ref: ref)
-			case let type as FunctionType:
-				EmittedFunctionValue(type: type, ref: ref)
-			case let typePointer as TypePointer<FunctionType>:
-				EmittedFunctionValue(
-					type: typePointer.type,
-					ref: ref
-				)
 			default:
 				fatalError()
 			}
@@ -273,13 +230,13 @@ public extension LLVM {
 				}
 
 				// Actually store the function pointer into the spot
-				let store = LLVMBuildStore(builder, fn, malloca)!
+				_ = LLVMBuildStore(builder, fn, malloca)!
 
 				// Return the stack value
 				return HeapValue<Emitted.T>(type: heapValue.type, ref: malloca)
 			} else {
 				let malloca = inEntry { LLVMBuildAlloca(builder, heapValue.type.typeRef(in: context), name)! }
-				let store = LLVMBuildStore(builder, heapValue.ref, malloca)!
+				_ = LLVMBuildStore(builder, heapValue.ref, malloca)!
 				return HeapValue<Emitted.T>(type: heapValue.type, ref: malloca)
 			}
 		}
@@ -325,13 +282,13 @@ public extension LLVM {
 				}
 
 				// Actually store the function pointer into the spot
-				let store = LLVMBuildStore(builder, fn, alloca)!
+				_ = LLVMBuildStore(builder, fn, alloca)!
 
 				// Return the stack value
 				return StackValue<Emitted.T>(type: stackValue.type, ref: alloca)
 			} else {
 				let alloca = inEntry { LLVMBuildAlloca(builder, stackValue.type.typeRef(in: context), name)! }
-				let store = LLVMBuildStore(builder, stackValue.ref, alloca)!
+				_ = LLVMBuildStore(builder, stackValue.ref, alloca)!
 				return StackValue<Emitted.T>(type: stackValue.type, ref: alloca)
 			}
 		}
@@ -399,7 +356,7 @@ public extension LLVM {
 		}
 
 		public func emit(return value: any EmittedValue) -> any IRValue {
-			let ref = LLVMBuildRet(
+			_ = LLVMBuildRet(
 				builder,
 				value.ref
 			)!

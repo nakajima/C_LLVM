@@ -8,14 +8,27 @@
 import C_LLVM
 
 public extension LLVM {
-	struct VoidValue: IRValue {
+	struct VoidValue: EmittedValue {
+		public init(type: LLVM.VoidType, ref: LLVMValueRef) {
+			fatalError()
+		}
+		
+		public var ref: LLVMValueRef { fatalError() }
 		public var type: LLVM.VoidType
+
+		public init() {
+			self.type = VoidType()
+		}
 	}
 
 	struct VoidType: IRType {
 		public typealias V = VoidValue
 
 		public init() {}
+
+		public var isVoid: Bool {
+			true
+		}
 
 		public func typeRef(in _: LLVM.Context) -> LLVMTypeRef {
 			LLVMVoidType()

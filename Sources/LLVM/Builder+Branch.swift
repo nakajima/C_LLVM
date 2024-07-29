@@ -61,19 +61,15 @@ public extension LLVM.Builder {
 		var blocks: [LLVMBasicBlockRef?] = [thenBlock]
 
 		LLVMPositionBuilderAtEnd(builder, elseBlock)
-		let alternativeEmitted: (any LLVM.EmittedValue)? = if let alternative {
-			{
-				let alternativeResult = alternative()
+		if let alternative {
+			let alternativeResult = alternative()
 
-				values.append(alternativeResult.ref)
-				blocks.append(elseBlock)
+			values.append(alternativeResult.ref)
+			blocks.append(elseBlock)
 
-				LLVMBuildBr(builder, mergeBlock)
+			LLVMBuildBr(builder, mergeBlock)
 
-				return alternativeResult
-			}()
-		} else {
-			nil
+			return alternativeResult
 		}
 
 		LLVMPositionBuilderAtEnd(builder, mergeBlock)
