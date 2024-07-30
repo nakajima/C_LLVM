@@ -13,15 +13,17 @@ public extension LLVM {
 		let builder: LLVMBuilderRef
 		var context: Context { module.context }
 		var builtins: [String: any BuiltinFunction] = [:]
+		var verbose: Bool
 
 		public var mainRef: LLVMValueRef {
 			var ref: Int? = nil
 			return withUnsafePointer(to: ref) { LLVMGenericValueRef($0) }
 		}
 
-		public init(module: Module) {
+		public init(module: Module, verbose: Bool = false) {
 			self.builder = LLVMCreateBuilderInContext(module.context.ref)
 			self.module = module
+			self.verbose = verbose
 		}
 
 		public func global(string: String, name: String) -> LLVMValueRef {
@@ -167,7 +169,7 @@ public extension LLVM {
 			let pointer = malloca(type: type, name: "")
 
 			for (i, value) in values.enumerated() {
-				print("-> setting gep for \(value.0)")
+				log("-> setting gep for \(value.0)")
 				let field = LLVMBuildStructGEP2(builder, typeRef, pointer.ref, UInt32(i), "")
 				LLVMBuildStore(builder, value.1.ref, field)
 			}
@@ -445,12 +447,12 @@ public extension LLVM {
 			let structTypeRef = structType.typeRef(in: context)
 			let pointer = malloca(type: structType, name: name)
 
-			print("-> setting function ref for pointer: \(name)")
+			log("-> setting function ref for pointer: \(name)")
 			let field = LLVMBuildStructGEP2(builder, structTypeRef, pointer.ref, UInt32(0), "")
 			LLVMBuildStore(builder, functionRef, field)
 
 			if let envStruct {
-				print("-> setting environment ref for pointer: \(name)")
+				log("-> setting environment ref for pointer: \(name)")
 				let field = LLVMBuildStructGEP2(builder, structTypeRef, pointer.ref, UInt32(1), "")
 				LLVMBuildStore(builder, envStruct.ref, field)
 			}
@@ -465,7 +467,7 @@ public extension LLVM {
 				if let existing = LLVMGetNamedFunction(module.ref, functionType.name) {
 					LLVMDumpValue(existing)
 				} else {
-					print("No existing function for \(functionType.name)")
+					log("No existing function for \(functionType.name)")
 				}
 				// Get the function
 			}
@@ -497,6 +499,12 @@ public extension LLVM {
 
 			LLVMPositionBuilderAtEnd(builder, currentBlock)
 			return result
+		}
+
+		func log(_ message: String) {
+			if verbose {
+				print(message)
+			}
 		}
 	}
 }
