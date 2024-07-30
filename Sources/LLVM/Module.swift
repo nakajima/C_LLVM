@@ -19,6 +19,10 @@ public extension LLVM {
 			self.ref = LLVMModuleCreateWithNameInContext(name, context.ref)
 		}
 
+		public func write(to path: String) {
+			LLVMWriteBitcodeToFile(ref, path)
+		}
+
 		public func dump() {
 			LLVMDumpModule(ref)
 		}
