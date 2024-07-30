@@ -8,15 +8,8 @@
 import C_LLVM
 
 public extension LLVM {
-	enum BinaryOperator: UInt32 {
-		case add
-
-		var toLLVM: LLVMOpcode {
-			switch self {
-			case .add:
-				LLVMAdd
-			}
-		}
+	enum BinaryOperator {
+		case add, equals, notEquals
 	}
 
 	struct BinaryOperation<V: EmittedValue>: IRValue {
@@ -33,6 +26,31 @@ public extension LLVM {
 			self.lhs = lhs
 			self.rhs = rhs
 			self.type = lhs.type
+		}
+
+		public func emit(in builder: Builder) -> any EmittedValue {
+			switch lhs {
+			case let type as EmittedIntValue:
+				return intOperation(op, lhs: lhs, rhs: rhs, in: builder)
+			default:
+				fatalError()
+			}
+		}
+
+		func intOperation(_ op: BinaryOperator, lhs: V, rhs: V, in builder: Builder) -> EmittedIntValue {
+			switch op {
+			case .add:
+				let ref = LLVMBuildAdd(builder.builder, lhs.ref, rhs.ref, "addtmp")!
+				return EmittedIntValue(type: .i32, ref: ref)
+			case .equals:
+				let op = LLVMIntEQ
+				let ref = LLVMBuildICmp(builder.builder, op, lhs.ref, rhs.ref, "eqltmp")!
+				return EmittedIntValue(type: .i1, ref: ref)
+			case .notEquals:
+				let op = LLVMIntNE
+				let ref = LLVMBuildICmp(builder.builder, op, lhs.ref, rhs.ref, "eqltmp")!
+				return EmittedIntValue(type: .i1, ref: ref)
+			}
 		}
 	}
 }

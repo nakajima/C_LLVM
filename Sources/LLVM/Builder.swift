@@ -36,16 +36,9 @@ public extension LLVM {
 			_ op: BinaryOperator,
 			_ lhs: Emitted,
 			_ rhs: Emitted
-		) -> Emitted {
+		) -> any EmittedValue {
 			let operation = LLVM.BinaryOperation<Emitted>(op: op, lhs: lhs, rhs: rhs)
-			let ref = LLVMBuildBinOp(builder, operation.op.toLLVM, lhs.ref, rhs.ref, "tmp")!
-
-			switch lhs.type {
-			case let value as IntType:
-				return EmittedIntValue(type: value, ref: ref) as! Emitted
-			default:
-				fatalError()
-			}
+			return operation.emit(in: self)
 		}
 
 		public func main(functionType: FunctionType, builtins: [any BuiltinFunction.Type]) -> any EmittedValue {
