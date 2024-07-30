@@ -8,7 +8,7 @@
 import C_LLVM
 
 public extension LLVM {
-	struct IntType: IRType, IR {
+	struct IntType: IRType, IR, Sendable {
 		public typealias V = IntValue
 
 		let width: Int

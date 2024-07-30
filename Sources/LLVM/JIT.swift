@@ -37,8 +37,6 @@ public extension LLVM {
 				LLVM.ModulePassManager(module: module).run()
 			}
 
-			module.dump()
-
 			// Execute the function
 			let result = LLVMRunFunction(engine, function, 0, nil)
 

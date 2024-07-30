@@ -12,6 +12,7 @@ public extension LLVM.Function {
 			     defined(any LLVM.StoredPointer),
 			     parameter(Int, any LLVM.IRType),
 			     capture(Int, LLVM.StructType),
+					 builtin(String),
 			     function(String)
 		}
 
@@ -39,6 +40,10 @@ public extension LLVM.Function {
 			// If it's not, then we can't return params anymore
 			if let binding = parent?.bindings[name] {
 				return binding
+			}
+
+			if name == "printf" {
+				return .builtin("printf")
 			}
 
 			return nil

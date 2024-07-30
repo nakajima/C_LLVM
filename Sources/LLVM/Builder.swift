@@ -12,10 +12,20 @@ public extension LLVM {
 		private let module: Module
 		let builder: LLVMBuilderRef
 		var context: Context { module.context }
+		var builtins: [String: any BuiltinFunction] = [:]
+
+		public var mainRef: LLVMValueRef {
+			var ref: Int? = nil
+			return withUnsafePointer(to: ref) { LLVMGenericValueRef($0) }
+		}
 
 		public init(module: Module) {
 			self.builder = LLVMCreateBuilderInContext(module.context.ref)
 			self.module = module
+		}
+
+		public func global(string: String, name: String) -> LLVMValueRef {
+			LLVMBuildGlobalStringPtr(builder, string, name)
 		}
 
 		// Emits binary operation IR. LHS/RHS must be the same (which isn't tough because
@@ -36,13 +46,19 @@ public extension LLVM {
 			}
 		}
 
-		public func main(functionType: FunctionType) -> any EmittedValue {
+		public func main(functionType: FunctionType, builtins: [any BuiltinFunction.Type]) -> any EmittedValue {
 			assert(functionType.name == "main", "trying to define \(functionType.name) as main!")
 
+			// Now do the main stuff
 			let typeRef = functionType.typeRef(in: context)
 			let functionRef = LLVMAddFunction(module.ref, functionType.name, typeRef)!
 			let entry = LLVMAppendBasicBlock(functionRef, "entry")
 			LLVMPositionBuilderAtEnd(builder, entry)
+
+			self.builtins = builtins.reduce(into: [:]) { res, builtin in
+				res[builtin.name] = builtin.init(module: module.ref, builder: self)
+			}
+
 			return LLVM.EmittedFunctionValue(type: functionType, ref: functionRef)
 		}
 
@@ -86,6 +102,12 @@ public extension LLVM {
 			}
 
 			return EmittedFunctionValue(type: functionType, ref: functionPointerRef.ref)
+		}
+
+		public func call(builtin name: String, with arguments: [any EmittedValue]) -> any EmittedValue {
+			let builtin = builtins[name]
+			var args: [LLVMValueRef?] = arguments.map(\.ref)
+			return builtin!.call(with: &args, builder: builder)
 		}
 
 		public func call(_ fn: EmittedFunctionValue, with arguments: [any EmittedValue]) -> any EmittedValue {
@@ -325,6 +347,16 @@ public extension LLVM {
 				EmittedFunctionValue(type: type, ref: returning)
 			default:
 				fatalError()
+			}
+		}
+
+		public func load(builtin name: String, as type: any IRType) -> any EmittedValue {
+			switch type {
+			case let type as LLVM.FunctionType:
+				let fn = LLVMGetNamedFunction(module.ref, name)!
+				return EmittedFunctionValue(type: type, ref: fn)
+			default:
+				fatalError("cannot load builtin: \(name)")
 			}
 		}
 
