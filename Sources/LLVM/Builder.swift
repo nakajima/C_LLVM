@@ -11,7 +11,7 @@ public extension LLVM {
 	class Builder {
 		private let module: Module
 		let builder: LLVMBuilderRef
-		var context: Context { module.context }
+		public var context: Context { module.context }
 		var builtins: [String: any BuiltinFunction] = [:]
 		var namedTypes: [String: LLVMTypeRef] = [:]
 		var verbose: Bool
@@ -164,6 +164,26 @@ public extension LLVM {
 			default:
 				fatalError()
 			}
+		}
+
+		public func call(
+			functionRef: LLVMValueRef,
+			as functionType: FunctionType,
+			with arguments: inout [LLVMValueRef?],
+			returning: any IRType
+		) -> any EmittedValue {
+			let ref = arguments.withUnsafeMutableBufferPointer {
+				LLVMBuildCall2(
+					builder,
+					functionType.typeRef(in: context),
+					functionRef,
+					$0.baseAddress,
+					UInt32($0.count),
+					functionType.name
+				)!
+			}
+
+			return returning.emit(ref: ref)
 		}
 
 		public func `capturesStruct`(type: CapturesStructType, values: [(String, any StoredPointer)]) -> any EmittedValue {
