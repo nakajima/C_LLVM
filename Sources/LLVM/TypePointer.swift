@@ -20,5 +20,9 @@ public extension LLVM {
 		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
 			LLVMPointerType(type.typeRef(in: context), 0)
 		}
+
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			fatalError()
+		}
 	}
 }

@@ -33,5 +33,9 @@ public extension LLVM {
 		public func typeRef(in _: LLVM.Context) -> LLVMTypeRef {
 			LLVMVoidType()
 		}
+
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			LLVM.VoidValue()
+		}
 	}
 }

@@ -11,6 +11,7 @@ public extension LLVM {
 		associatedtype V: IRValue
 		func typeRef(in context: Context) -> LLVMTypeRef
 		func asReturnType(in context: Context) -> LLVMTypeRef
+		func emit(ref: LLVMValueRef) -> any EmittedValue
 		var isVoid: Bool { get }
 	}
 }

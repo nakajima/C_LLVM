@@ -24,6 +24,10 @@ public extension LLVM {
 		public func constant(_ value: Int) -> Constant<IntValue, Int> {
 			Constant(type: .i32, value: IntValue(type: .i32), literal: value)
 		}
+
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			EmittedIntValue(type: self, ref: ref)
+		}
 	}
 }
 

@@ -15,9 +15,9 @@ public extension LLVM {
 		public let returnType: any IRType
 		public let parameterTypes: [any IRType]
 		public let isVarArg: Bool
-		public let captures: LLVM.StructType?
+		public let captures: LLVM.CapturesStructType?
 
-		public init(name: String, returnType: any IRType, parameterTypes: [any IRType], isVarArg: Bool, captures: LLVM.StructType?) {
+		public init(name: String, returnType: any IRType, parameterTypes: [any IRType], isVarArg: Bool, captures: LLVM.CapturesStructType?) {
 			self.name = name
 			self.returnType = returnType
 			self.parameterTypes = parameterTypes
@@ -27,6 +27,10 @@ public extension LLVM {
 
 		public func asReturnType(in context: LLVM.Context) -> LLVMTypeRef {
 			LLVMPointerType(typeRef(in: context), 0)
+		}
+
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			EmittedFunctionValue(type: self, ref: ref)
 		}
 
 		public func typeRef(in context: Context = .global) -> LLVMTypeRef {

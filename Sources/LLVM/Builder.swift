@@ -13,6 +13,7 @@ public extension LLVM {
 		let builder: LLVMBuilderRef
 		var context: Context { module.context }
 		var builtins: [String: any BuiltinFunction] = [:]
+		var namedTypes: [String: LLVMTypeRef] = [:]
 		var verbose: Bool
 
 		public var mainRef: LLVMValueRef {
@@ -105,13 +106,21 @@ public extension LLVM {
 			return builtin!.call(with: &args, builder: builder)
 		}
 
+		public func instantiate(struct structType: LLVM.StructType, with args: [any EmittedValue]) -> any EmittedValue {
+			var args: [LLVMValueRef?] = args.map(\.ref)
+//			let structTypeRef = structType.typeRef(in: context)
+
+			return args.withUnsafeMutableBufferPointer {
+
+				let ref = LLVMConstStruct($0.baseAddress, UInt32($0.count), .zero)!
+				return EmittedStructPointerValue(type: structType, ref: ref)
+			}
+		}
+
 		public func call(_ fn: EmittedFunctionValue, with arguments: [any EmittedValue]) -> any EmittedValue {
 			var args: [LLVMValueRef?] = arguments.map(\.ref)
 
 			let functionPointerType = FunctionPointerType(functionType: fn.type)
-
-			if fn.type.name.contains("fn_y") {}
-
 			let functionRefPointer = LLVMBuildStructGEP2(
 				builder,
 				functionPointerType.typeRef(in: context),
@@ -157,7 +166,7 @@ public extension LLVM {
 			}
 		}
 
-		public func `struct`(type: StructType, values: [(String, any StoredPointer)]) -> any EmittedValue {
+		public func `capturesStruct`(type: CapturesStructType, values: [(String, any StoredPointer)]) -> any EmittedValue {
 			let typeRef = type.typeRef(in: context)
 			let pointer = malloca(type: type, name: "")
 
@@ -198,6 +207,8 @@ public extension LLVM {
 				return HeapValue<LLVM.IntType>(type: type, ref: malloca)
 			case let type as LLVM.StructType:
 				return HeapValue<LLVM.StructType>(type: type, ref: malloca)
+			case let type as LLVM.CapturesStructType:
+				return HeapValue<LLVM.CapturesStructType>(type: type, ref: malloca)
 			default:
 				fatalError()
 			}
@@ -228,9 +239,28 @@ public extension LLVM {
 				return StackValue<LLVM.FunctionType>(type: type, ref: alloca)
 			case let type as LLVM.IntType:
 				return StackValue<LLVM.IntType>(type: type, ref: alloca)
+			case let type as LLVM.StructType:
+				return StackValue<LLVM.StructType>(type: type, ref: alloca)
 			default:
 				fatalError()
 			}
+		}
+
+		public func namedStruct(name: String, types: [any IRType]) -> LLVMTypeRef {
+			if let existing = namedTypes[name] {
+				return existing
+			}
+
+			var ref = LLVMStructCreateNamed(context.ref, name)
+			var types: [LLVMTypeRef?] = types.map { $0.typeRef(in: context) }
+
+			types.withUnsafeMutableBufferPointer {
+				LLVMStructSetBody(ref, $0.baseAddress, UInt32($0.count), .zero)
+			}
+
+			namedTypes[name] = ref
+
+			return ref!
 		}
 
 		public func store<Emitted: EmittedValue>(heapValue: Emitted, name: String = "") -> HeapValue<Emitted.T> {
@@ -263,7 +293,7 @@ public extension LLVM {
 			return pointer
 		}
 
-		public func store(capture value: any EmittedValue, at index: Int, as envStructType: StructType) {
+		public func store(capture value: any EmittedValue, at index: Int, as envStructType: CapturesStructType) {
 			let parameterCount = LLVMCountParams(currentFunction)
 
 			// Get the env pointer
@@ -310,6 +340,19 @@ public extension LLVM {
 			}
 		}
 
+		public func load(from structPointer: EmittedStructPointerValue, index: Int, as type: any IRType) -> any EmittedValue {
+			let ptr = LLVMBuildStructGEP2(
+				builder,
+				structPointer.type.typeRef(in: context),
+				structPointer.ref,
+				UInt32(index),
+				"geptmp"
+			)
+
+			let ref = LLVMBuildLoad2(builder, type.typeRef(in: context), ptr, "loadtmp")!
+			return type.emit(ref: ref)
+		}
+
 		public func load(parameter: Int) -> any EmittedValue {
 			let ref = LLVMGetParam(currentFunction, UInt32(parameter))!
 			return EmittedIntValue(type: .i32, ref: ref)
@@ -317,7 +360,7 @@ public extension LLVM {
 
 		// When loading captured values, we need to go to the environment param passed
 		// as the last argument.
-		public func load(capture index: Int, envStructType: StructType) -> any EmittedValue {
+		public func load(capture index: Int, envStructType: CapturesStructType) -> any EmittedValue {
 			let paramCount = LLVMCountParams(currentFunction)
 
 			// Get the env pointer
@@ -366,6 +409,10 @@ public extension LLVM {
 				let pointerType = LLVMPointerType(pointer.type.typeRef(in: context), 0)
 				let ref = LLVMBuildLoad2(builder, pointerType, pointer.ref, name)!
 				return EmittedFunctionValue(type: type, ref: ref)
+			case let type as StructType:
+//				let pointerType = LLVMPointerType(pointer.type.typeRef(in: context), 0)
+//				let ref = LLVMBuildLoad2(builder, pointerType, pointer.ref, name)!
+				return EmittedStructPointerValue(type: type, ref: pointer.ref)
 			default:
 				fatalError()
 			}
@@ -430,13 +477,15 @@ public extension LLVM {
 			functionRef: LLVMValueRef,
 			envStruct: CapturesStruct?
 		) -> any StoredPointer {
+			let functionPointerType = LLVM.TypePointer(type: functionType)
+
 			let types: [any IRType] = if let envStruct {
-				[functionType, envStruct.type]
+				[functionPointerType, envStruct.type]
 			} else {
-				[functionType]
+				[functionPointerType]
 			}
 
-			let structType = StructType(name: name, types: types)
+			let structType = CapturesStructType(name: name, types: types)
 			let structTypeRef = structType.typeRef(in: context)
 			let pointer = malloca(type: structType, name: name)
 
@@ -456,14 +505,7 @@ public extension LLVM {
 		}
 
 		private func functionRef(for functionType: FunctionType) -> LLVMValueRef {
-			if functionType.name.contains("fn_y") {
-				if let existing = LLVMGetNamedFunction(module.ref, functionType.name) {
-					LLVMDumpValue(existing)
-				} else {
-					log("No existing function for \(functionType.name)")
-				}
-				// Get the function
-			}
+			// Get the function
 			if let fn = LLVMGetNamedFunction(module.ref, functionType.name) {
 				return fn
 			} else {

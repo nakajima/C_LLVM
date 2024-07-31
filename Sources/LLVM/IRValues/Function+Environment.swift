@@ -11,7 +11,8 @@ public extension LLVM.Function {
 			case declared(any LLVM.StoredPointer),
 			     defined(any LLVM.StoredPointer),
 			     parameter(Int, any LLVM.IRType),
-			     capture(Int, LLVM.StructType),
+			     capture(Int, LLVM.CapturesStructType),
+					 structType(LLVM.StructType),
 					 builtin(String),
 			     function(String)
 		}
@@ -67,6 +68,10 @@ public extension LLVM.Function {
 
 		public func declare(_ name: String, as value: any LLVM.StoredPointer) {
 			bindings[name] = .declared(value)
+		}
+
+		public func defineType(_ name: String, as type: LLVM.StructType) {
+			bindings[name] = .structType(type)
 		}
 
 		public func declareFunction(_ name: String) {

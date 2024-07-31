@@ -19,6 +19,10 @@ public extension LLVM {
 		public func typeRef(in _: LLVM.Context) -> LLVMTypeRef {
 			fatalError()
 		}
+
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			fatalError()
+		}
 	}
 
 	struct RawValue: IRValue {

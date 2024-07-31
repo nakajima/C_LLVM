@@ -14,5 +14,9 @@ public extension LLVM {
 		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
 			IntType(width: 1).typeRef(in: context)
 		}
+
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			EmittedIntValue(type: .i1, ref: ref)
+		}
 	}
 }

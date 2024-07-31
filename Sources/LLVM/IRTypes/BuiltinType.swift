@@ -19,5 +19,9 @@ public extension LLVM {
 		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
 			fatalError("builtin types should not be referenced")
 		}
+
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			fatalError("builtin types cannot be emitted")
+		}
 	}
 }

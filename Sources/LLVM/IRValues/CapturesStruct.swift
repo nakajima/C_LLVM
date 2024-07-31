@@ -8,7 +8,7 @@
 import C_LLVM
 
 public extension LLVM {
-	struct StructType: LLVM.IRType {
+	struct CapturesStructType: LLVM.IRType {
 		public typealias V = CapturesStruct
 		let name: String
 		let types: [any LLVM.IRType]
@@ -26,28 +26,28 @@ public extension LLVM {
 				return ref!
 			}
 		}
-
-		public func pointer(in context: LLVM.Context) -> any StoredPointer {
-			HeapValue(type: self, ref: typeRef(in: context))
+		
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			fatalError()
 		}
 	}
 
 	struct CapturesStruct: LLVM.IRValue, LLVM.StoredPointer {
-		public typealias T = StructType
-		public var type: LLVM.StructType
+		public typealias T = CapturesStructType
+		public var type: LLVM.CapturesStructType
 		public var ref: LLVMValueRef
 
 		public var offsets: [String: Int] = [:]
 		public var captures: [any LLVM.StoredPointer] = []
 
-		public init(type: LLVM.StructType, offsets: [String: Int], captures: [any LLVM.StoredPointer], ref: LLVMValueRef) {
+		public init(type: LLVM.CapturesStructType, offsets: [String: Int], captures: [any LLVM.StoredPointer], ref: LLVMValueRef) {
 			self.type = type
 			self.offsets = offsets
 			self.captures = captures
 			self.ref = ref
 		}
 
-		public init(type: LLVM.StructType, ref: LLVMValueRef) {
+		public init(type: LLVM.CapturesStructType, ref: LLVMValueRef) {
 			self.type = type
 			self.ref = ref
 		}

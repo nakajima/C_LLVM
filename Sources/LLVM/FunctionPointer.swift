@@ -14,11 +14,15 @@ public extension LLVM {
 		let functionType: FunctionType
 
 		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
-			if let captures = functionType.captures {
-				StructType(name: "\(functionType.name)fnPtrWithEnv", types: [functionType, captures]).typeRef(in: context)
+			if let captures = functionType.captures, !captures.types.isEmpty {
+				CapturesStructType(name: "\(functionType.name)fnPtrWithEnv", types: [functionType, captures]).typeRef(in: context)
 			} else {
-				StructType(name: "\(functionType.name)fnPtr", types: [functionType]).typeRef(in: context)
+				CapturesStructType(name: "\(functionType.name)fnPtr", types: [functionType]).typeRef(in: context)
 			}
+		}
+
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			fatalError()
 		}
 	}
 
@@ -30,6 +34,10 @@ public extension LLVM {
 		public func typeRef(in context: LLVM.Context) -> LLVMTypeRef {
 			LLVMPointerType(envStructType.typeRef(in: context), 0)
 		}
+
+		public func emit(ref: LLVMValueRef) -> any LLVM.EmittedValue {
+			fatalError()
+		}
 	}
 
 	struct FunctionPointer: LLVM.StoredPointer {
@@ -39,9 +47,6 @@ public extension LLVM {
 		public var ref: LLVMValueRef
 
 		public var isHeap: Bool
-
-//		var functionRef: LLVMValueRef
-//		var capturesRef: LLVMValueRef?
 
 		public init(type: LLVM.FunctionPointerType, ref: LLVMValueRef) {
 			self.type = type
